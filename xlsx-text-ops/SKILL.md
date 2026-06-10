@@ -25,7 +25,8 @@ Text-only editing of existing `.xlsx` and `.xlsm` files. Preserves formulas, for
 - Creating new workbooks from scratch → use openpyxl scripting
 - Redesigning layouts, cell styles, or chart formats
 - Editing formulas or cell values that are not text
-- Reading or editing VBA macro code → use the `xlsm-vba-ops` skill
+- Reading VBA macro code → use the `xlsm-vba-ops` skill
+- Editing VBA macro code → use the `xlsm-vba-edit` skill
 - Live Excel automation → use a COM/MCP server
 
 ---

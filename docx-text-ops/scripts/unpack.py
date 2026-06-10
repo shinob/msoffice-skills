@@ -10,6 +10,7 @@ Example:
 """
 
 import argparse
+import re
 import sys
 import zipfile
 import xml.dom.minidom
@@ -39,12 +40,15 @@ def unpack(input_file: str, output_dir: str) -> str:
         with zipfile.ZipFile(src, "r") as zf:
             zf.extractall(dst)
 
-        xml_files = list(dst.rglob("*.xml")) + list(dst.rglob("*.rels"))
+        xml_files = list(dst.rglob("*.xml"))
+        rels_files = list(dst.rglob("*.rels"))
         for f in xml_files:
             _pretty_print(f)
             _escape_smart_quotes(f)
+        for f in rels_files:
+            _escape_smart_quotes(f)
 
-        return f"Unpacked {input_file} ({len(xml_files)} XML files)"
+        return f"Unpacked {input_file} ({len(xml_files) + len(rels_files)} XML files)"
     except zipfile.BadZipFile:
         return f"Error: {input_file} is not a valid Word file"
     except Exception as e:
@@ -53,8 +57,15 @@ def unpack(input_file: str, output_dir: str) -> str:
 
 def _pretty_print(path: Path) -> None:
     try:
-        dom = xml.dom.minidom.parseString(path.read_bytes())
-        path.write_bytes(dom.toprettyxml(indent="  ", encoding="utf-8"))
+        raw = path.read_bytes()
+        m = re.match(rb"<\?xml[^?]*\?>", raw)
+        orig_decl = m.group().decode("utf-8") if m else None
+
+        dom = xml.dom.minidom.parseString(raw)
+        pretty = dom.toprettyxml(indent="  ", encoding="utf-8").decode("utf-8")
+        if orig_decl:
+            pretty = re.sub(r"<\?xml[^?]*\?>", orig_decl, pretty, count=1)
+        path.write_text(pretty, encoding="utf-8")
     except Exception:
         pass
 

@@ -12,6 +12,7 @@ Claude Code スキル集。既存の Office ファイルに対してテキスト
 | [docx-text-ops](#docx-text-ops) | `.docx` `.docm` `.dotx` | 読み書き | Word 文書のテキスト編集 |
 | [pptx-text-ops](#pptx-text-ops) | `.pptx` | 読み書き | PowerPoint スライドのテキスト編集 |
 | [xlsx-text-ops](#xlsx-text-ops) | `.xlsx` `.xlsm` | 読み書き | Excel ワークブックのテキスト編集 |
+| [xlsm-vba-edit](#xlsm-vba-edit) | `.xlsm` | 読み書き（VBE経由） | Excel VBA の分析・修正・機能追加 |
 | [xlsm-vba-ops](#xlsm-vba-ops) | `.xlsm` | **読み取り専用** | Excel VBA マクロの抽出・レビュー |
 
 ---
@@ -23,8 +24,9 @@ Claude Code スキル集。既存の Office ファイルに対してテキスト
 ├── .docx / .docm → docx-text-ops
 ├── .pptx         → pptx-text-ops
 ├── .xlsx / .xlsm
-│   ├── セルのテキストを編集したい → xlsx-text-ops
-│   └── VBA マクロを読みたい      → xlsm-vba-ops
+│   ├── セルのテキストを編集したい     → xlsx-text-ops
+│   ├── VBA を修正・機能追加したい     → xlsm-vba-edit
+│   └── VBA マクロを読むだけでよい    → xlsm-vba-ops
 └── 新規ファイルを作りたい → スキル対象外（python-docx / openpyxl スクリプトを使う）
 ```
 
@@ -82,7 +84,7 @@ Excel ワークブック（`.xlsx` / `.xlsm`）のセルテキストのみを編
 
 **トリガー例**: セルテキストの書き換え、翻訳、用語統一、シート名変更、プレースホルダー除去
 
-**対象外**: ゼロからのワークブック作成、レイアウト再設計、VBA 編集（→ xlsm-vba-ops）
+**対象外**: ゼロからのワークブック作成、レイアウト再設計、VBA 編集（→ xlsm-vba-edit）、VBA 読み取り専用（→ xlsm-vba-ops）
 
 ```bash
 # テキスト抽出
@@ -97,6 +99,24 @@ python3 skills/xlsx-text-ops/scripts/pack.py unpacked/ edited.xlsx
 依存: `pip install openpyxl`
 
 > **注意**: `sharedStrings.xml` の1エントリを変更すると、そのインデックスを参照するすべてのセルに影響する。編集前に `extract.py` で影響範囲を確認すること。
+
+---
+
+### xlsm-vba-edit
+
+`.xlsm` ファイルの VBA を AI と協力して分析・修正・機能追加する。VBA をテキストファイルに書き出し、AI が編集し、ユーザーが VBE に貼り付けて反映する。
+
+**トリガー例**: VBA のバグを修正したい、未完成機能を実装したい、新機能を追加したい、VBA コードをレビューして改善したい
+
+**対象外**: セルテキストの編集（→ xlsx-text-ops）、VBA の読み取りのみ（→ xlsm-vba-ops）
+
+```bash
+# VBA を分類フォルダに書き出す
+python3 skills/xlsm-vba-edit/scripts/export_vba.py file.xlsm
+# → file_VBA/{ExcelObjects,Forms,Modules,Classes}/ に出力
+```
+
+依存: `pip install oletools`
 
 ---
 
@@ -162,6 +182,13 @@ skills/
 │   └── references/
 │       ├── xlsx-text-structure.md
 │       └── text-edit-recipes.md
+├── xlsm-vba-edit/
+│   ├── SKILL.md
+│   ├── scripts/
+│   │   └── export_vba.py
+│   └── references/
+│       ├── workflow.md
+│       └── vba-edit-recipes.md
 └── xlsm-vba-ops/
     ├── SKILL.md
     ├── scripts/

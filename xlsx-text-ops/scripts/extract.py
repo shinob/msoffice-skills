@@ -39,7 +39,7 @@ def extract(input_file: str) -> str:
         for name in wb.sheetnames:
             lines.append(f"[sheet] {name}")
 
-        # Cell text per sheet
+        # Cell text and comments per sheet
         for sheet in wb.worksheets:
             lines.append(f"<!-- sheet: {sheet.title} -->")
             for row in sheet.iter_rows():
@@ -48,14 +48,11 @@ def extract(input_file: str) -> str:
                         text = cell.value.strip()
                         if text:
                             lines.append(f"{sheet.title}!{cell.coordinate}: {text}")
-
-            # Cell comments/notes
-            if sheet.comments:
-                for coord, comment in sheet.comments.items():
-                    raw = comment.text
-                    text = raw.strip() if isinstance(raw, str) else ""
-                    if text:
-                        lines.append(f"[comment] {sheet.title}!{coord}: {text}")
+                    if cell.comment:
+                        raw = cell.comment.text
+                        comment_text = raw.strip() if isinstance(raw, str) else ""
+                        if comment_text:
+                            lines.append(f"[comment] {sheet.title}!{cell.coordinate}: {comment_text}")
 
         # Named ranges (defined names)
         if wb.defined_names:

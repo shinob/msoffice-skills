@@ -1,0 +1,13 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Office temporary files
+~$*
+
+# Skill working outputs
+unpacked/
+*_VBA/
