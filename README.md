@@ -168,8 +168,7 @@ skills/
 │   ├── scripts/
 │   │   ├── extract.py
 │   │   ├── unpack.py
-│   │   ├── pack.py
-│   │   └── soffice.py
+│   │   └── pack.py
 │   └── references/
 │       ├── pptx-text-structure.md
 │       └── text-edit-recipes.md

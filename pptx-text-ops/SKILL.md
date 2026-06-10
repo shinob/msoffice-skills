@@ -72,10 +72,7 @@ Text-only editing of existing `.pptx` files. Preserves layout, images, masters, 
    Check: old text gone, new text present, no duplicates, no leftover placeholders.
 
 9. **Visual spot-check** when layout risk exists (long translations, rewrites):
-   ```bash
-   python skills/pptx-text-ops/scripts/soffice.py --headless --convert-to pdf edited.pptx
-   pdftoppm -jpeg -r 150 edited.pdf slide
-   ```
+   Open `edited.pptx` in PowerPoint or LibreOffice Impress and check for text overflow or overlap.
 
 ---
 
@@ -122,5 +119,3 @@ If grep returns results, fix them before declaring success.
 - `pip install python-pptx` — text extraction (`extract.py`)
 - `skills/pptx-text-ops/scripts/unpack.py` — unpack PPTX to XML
 - `skills/pptx-text-ops/scripts/pack.py` — repack with validation
-- `skills/pptx-text-ops/scripts/soffice.py` — LibreOffice wrapper for PDF conversion
-- Poppler (`pdftoppm`) — PDF to images for visual QA

@@ -172,12 +172,7 @@ Use when translating all visible slide text to another language.
 
 **Overflow risk check:**
 
-```bash
-python skills/pptx-text-ops/scripts/soffice.py --headless --convert-to pdf edited.pptx
-pdftoppm -jpeg -r 150 edited.pdf slide
-```
-
-Inspect slides where translated text is significantly longer than the original. Look for text cut off at text box boundaries.
+Open `edited.pptx` in PowerPoint or LibreOffice Impress and inspect slides where translated text is significantly longer than the original. Look for text cut off at text box boundaries.
 
 ---
 
@@ -213,14 +208,7 @@ python3 skills/pptx-text-ops/scripts/extract.py edited.pptx | grep -i "old term"
 python3 -c "from pptx import Presentation; Presentation('edited.pptx'); print('OK')"
 ```
 
-Visual QA when needed:
-
-```bash
-python skills/pptx-text-ops/scripts/soffice.py --headless --convert-to pdf edited.pptx
-pdftoppm -jpeg -r 150 edited.pdf slide
-```
-
-Check edited slides for:
+Visual QA when needed: open `edited.pptx` in PowerPoint or LibreOffice Impress and check edited slides for:
 
 - Text overflow or cut-off at text box edges
 - Overlapping text elements
