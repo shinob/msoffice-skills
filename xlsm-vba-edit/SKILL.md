@@ -2,14 +2,16 @@
 name: xlsm-vba-edit
 description: "Use this skill when the user wants to analyse, fix bugs in, or add
   features to VBA code inside an Excel macro-enabled workbook (.xlsm). Triggers:
-  VBA のバグを直したい, VBA に機能を追加したい, xlsm を AI と一緒に修正したい,
-  VBA コードを修正して反映したい. Workflow: export VBA to organised text files with
+  fix VBA bugs, add VBA features, improve an xlsm workbook with AI assistance,
+  update VBA code and apply it through Excel VBE. Workflow: export VBA to organised text files with
   export_vba.py → AI edits the text files → user pastes into Excel VBE.
   For read-only VBA review without editing, use xlsm-vba-ops instead."
 license: Original work, no third-party license constraints
 ---
 
 # XLSM VBA Edit Skill
+
+[日本語](SKILL.ja.md)
 
 AI-assisted workflow for analysing, fixing, and extending VBA code in `.xlsm` files.
 VBA is exported to text files, edited by AI, and pasted back via Excel VBE.
@@ -18,7 +20,7 @@ VBA is exported to text files, edited by AI, and pasted back via Excel VBE.
 
 | Task | Approach |
 |------|----------|
-| Export VBA to text files | `python3 skills/xlsm-vba-edit/scripts/export_vba.py file.xlsm` |
+| Export VBA to text files | `python3 xlsm-vba-edit/scripts/export_vba.py file.xlsm` |
 | Analyse bugs / issues | Run export → use analysis prompt in `references/vba-edit-recipes.md` |
 | Plan a new feature | Run export → use feature prompt in `references/vba-edit-recipes.md` |
 | Apply fixes to xlsm | AI edits `_VBA/` files → user pastes each module into Excel VBE |
@@ -38,7 +40,7 @@ VBA is exported to text files, edited by AI, and pasted back via Excel VBE.
 
 1. **Export** VBA source to organised text files:
    ```bash
-   python3 skills/xlsm-vba-edit/scripts/export_vba.py path/to/file.xlsm
+   python3 xlsm-vba-edit/scripts/export_vba.py path/to/file.xlsm
    ```
    Output: `{basename}_VBA/{ExcelObjects,Forms,Modules,Classes}/`
 

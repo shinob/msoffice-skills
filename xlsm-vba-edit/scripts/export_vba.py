@@ -1,17 +1,16 @@
-"""
-export_vba.py — xlsm ファイルの VBA モジュールをテキストファイルに書き出す
+"""Export VBA modules from an .xlsm workbook to text files.
 
-使い方:
-    python3 export_vba.py <xlsmファイル>
+Usage:
+    python3 export_vba.py <file.xlsm>
 
-出力先:
-    {元ファイル名}_VBA/
-    ├── ExcelObjects/   ThisWorkbook, シートモジュール (.cls)
-    ├── Forms/          UserForm (.frm)
-    ├── Modules/        標準モジュール (.bas)
-    └── Classes/        クラスモジュール (.cls)
+Output:
+    {workbook_stem}_VBA/
+    ├── ExcelObjects/   ThisWorkbook and sheet modules (.cls)
+    ├── Forms/          UserForms (.frm)
+    ├── Modules/        standard modules (.bas)
+    └── Classes/        class modules (.cls)
 
-依存:
+Dependency:
     pip install oletools
 """
 
@@ -21,31 +20,31 @@ import sys
 
 
 def classify_module(vba_filename: str, vba_code: str) -> str:
-    """モジュール種別を判定してサブフォルダ名を返す"""
+    """Return the output subfolder for a VBA module."""
     ext = os.path.splitext(vba_filename)[1].lower()
 
-    # 標準モジュール（.bas）
+    # Standard module (.bas)
     if ext == ".bas":
         return "Modules"
 
-    # UserForm（.frm）
+    # UserForm (.frm)
     if ext == ".frm":
         return "Forms"
 
-    # .cls の場合は VB_Base で判定
+    # Class modules need VB_Base inspection.
     match = re.search(r'Attribute VB_Base = "([^"]+)"', vba_code)
     if match:
         vb_base = match.group(1).upper()
-        # Workbook (00020819) または Worksheet (00020820) → Excel オブジェクト
+        # Workbook (00020819) or Worksheet (00020820)
         if "00020819" in vb_base or "00020820" in vb_base:
             return "ExcelObjects"
-        # UserForm の別表記（念のため）
+        # Some UserForms appear as .cls with this base GUID.
         if "B4C80393" in vb_base:
             return "Forms"
-        # その他の .cls → クラスモジュール
+        # Other .cls modules are class modules.
         return "Classes"
 
-    # VB_Base なし・.cls → クラスモジュール
+    # .cls without VB_Base is treated as a class module.
     return "Classes"
 
 
@@ -53,25 +52,25 @@ def export_vba(xlsm_path: str) -> None:
     try:
         from oletools.olevba import VBA_Parser
     except ImportError:
-        print("エラー: oletools がインストールされていません。")
+        print("Error: oletools is not installed.")
         print("  pip install oletools")
         sys.exit(1)
 
     if not os.path.isfile(xlsm_path):
-        print(f"エラー: ファイルが見つかりません: {xlsm_path}")
+        print(f"Error: file not found: {xlsm_path}")
         sys.exit(1)
 
-    # 出力ディレクトリ
+    # Output directory
     basename = os.path.splitext(os.path.basename(xlsm_path))[0]
     out_root = os.path.join(os.path.dirname(xlsm_path), basename + "_VBA")
     subfolders = ["ExcelObjects", "Forms", "Modules", "Classes"]
     for sf in subfolders:
         os.makedirs(os.path.join(out_root, sf), exist_ok=True)
 
-    # VBA 抽出
+    # VBA extraction
     vba = VBA_Parser(xlsm_path)
     if not vba.detect_vba_macros():
-        print("VBA マクロが見つかりませんでした。")
+        print("No VBA macros found.")
         return
 
     counts = {sf: 0 for sf in subfolders}
@@ -91,20 +90,20 @@ def export_vba(xlsm_path: str) -> None:
         except OSError as e:
             errors.append(f"  {vba_filename}: {e}")
 
-    # サマリー表示
+    # Summary
     total = sum(counts.values())
-    print(f"出力先: {out_root}/")
-    print(f"合計: {total} モジュール")
+    print(f"Output directory: {out_root}/")
+    print(f"Total modules: {total}")
     for sf in subfolders:
-        print(f"  {sf:14s}: {counts[sf]} 件")
+        print(f"  {sf:14s}: {counts[sf]}")
     if errors:
-        print("\n書き込みエラー:")
+        print("\nWrite errors:")
         for e in errors:
             print(e)
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("使い方: python3 export_vba.py <xlsmファイル>")
+        print("Usage: python3 export_vba.py <file.xlsm>")
         sys.exit(1)
     export_vba(sys.argv[1])

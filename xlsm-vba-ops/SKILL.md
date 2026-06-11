@@ -6,13 +6,15 @@ license: Original work, no third-party license constraints
 
 # XLSM VBA Operations Skill
 
+[日本語](SKILL.ja.md)
+
 Read-only extraction of VBA source code from `.xlsm` files. Output is plain text for reading and reviewing in Claude.
 
 ## Quick Reference
 
 | Task | Approach |
 |------|----------|
-| Extract all VBA modules | `python3 skills/xlsm-vba-ops/scripts/extract.py file.xlsm` |
+| Extract all VBA modules | `python3 xlsm-vba-ops/scripts/extract.py file.xlsm` |
 | List module names only | Extract output → look for `<!-- module: ... -->` lines |
 | Review a specific module | Extract → search for the module header |
 | Edit VBA code | Extract → edit in Claude → paste into Excel VBE manually |
@@ -32,7 +34,7 @@ Read-only extraction of VBA source code from `.xlsm` files. Output is plain text
 
 1. **Extract** VBA source from the workbook:
    ```bash
-   python3 skills/xlsm-vba-ops/scripts/extract.py path/to/file.xlsm
+   python3 xlsm-vba-ops/scripts/extract.py path/to/file.xlsm
    ```
 
 2. **Read** the output — each module is separated by a `<!-- module: NAME -->` header:

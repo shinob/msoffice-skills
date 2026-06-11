@@ -15,7 +15,12 @@ Examples:
 import argparse
 import sys
 from pathlib import Path
-from pptx import Presentation
+
+try:
+    from pptx import Presentation
+except ImportError:
+    print("Error: python-pptx is not installed. Run: pip install python-pptx", file=sys.stderr)
+    sys.exit(1)
 
 
 def extract(input_file: str) -> str:

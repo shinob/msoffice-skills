@@ -1,57 +1,47 @@
 # XLSM / VBA Internal Structure
 
-## ファイル形式
+[日本語](xlsm-vba-structure.ja.md)
 
-`.xlsm` は ZIP アーカイブ（XLSX と同じ OPC 形式）。VBA は XML ではなくバイナリで格納される。
+## File Format
 
-```
-Book1.xlsm (ZIP)
+An `.xlsm` workbook is an OPC ZIP package like `.xlsx`, with an additional binary VBA project:
+
+```text
+Book1.xlsm
 ├── [Content_Types].xml
 ├── _rels/.rels
 ├── xl/
 │   ├── workbook.xml
 │   ├── worksheets/sheet1.xml
-│   ├── vbaProject.bin   ← VBA コード（OLE Compound Document）
+│   ├── vbaProject.bin
 │   └── ...
 └── docProps/
 ```
 
-## vbaProject.bin の構造
+VBA source is not stored as XML. It is stored inside `xl/vbaProject.bin`, an OLE Compound File Binary Format document.
 
-`vbaProject.bin` は OLE Compound File Binary Format（CFB/CFBF）と呼ばれるバイナリ形式。
+## `vbaProject.bin`
 
-内部に以下のストリームが含まれる：
+Typical streams include:
 
-| ストリーム | 内容 |
-|-----------|------|
-| `VBA/ThisWorkbook` | ThisWorkbook モジュールのバイナリ |
-| `VBA/Sheet1` | Sheet1 モジュールのバイナリ |
-| `VBA/Module1` | 標準モジュールのバイナリ |
-| `VBA/_VBA_PROJECT` | プロジェクトメタデータ |
-| `VBA/dir` | モジュール一覧・属性（圧縮） |
+| Stream | Meaning |
+|--------|---------|
+| `VBA/ThisWorkbook` | ThisWorkbook module |
+| `VBA/Sheet1` | worksheet module |
+| `VBA/Module1` | standard module |
+| `VBA/_VBA_PROJECT` | project metadata |
+| `VBA/dir` | compressed module directory and attributes |
 
-各モジュールストリームにはコンパイル済み p-code とソーステキストの両方が含まれる。ソーステキスト部分は MS-OVBA 圧縮アルゴリズムで圧縮されている。
+Module streams contain compiled p-code and compressed source text. `oletools.olevba` reads these streams and extracts the source text.
 
-## oletools / olevba の動作
+## Why Write-Back Is Not Supported
 
-`oletools` の `VBA_Parser` は以下を行う：
+Writing VBA back safely requires rebuilding compressed source streams, maintaining OLE structure, and keeping Excel's compiled state consistent. The most reliable write path is Excel VBE, where Excel handles recompilation and project metadata.
 
-1. ZIP から `vbaProject.bin` を取り出す
-2. OLE ストリームを解析して `VBA/dir` を読む
-3. 各モジュールストリームのオフセットを確認し、圧縮ソースを展開する
-4. プレーンテキストの VBA ソースコードを返す
+## Module Types
 
-## なぜ書き戻しが難しいか
-
-- ソーステキストを書き換えると p-code と不整合になる（Excel が自動再コンパイルを試みる）
-- OLE ストリームの再パッキング（MS-OVBA 圧縮、CFB 構造の再構築）が必要
-- `oletools` は読み取り専用; `olefile` で書き込みは可能だが実装が複雑
-- 最も確実な方法は Excel の VBE（Visual Basic Editor）で直接貼り付けること
-
-## モジュールの種類と拡張子
-
-| 拡張子 | 種類 | 例 |
-|--------|------|-----|
-| `.cls` | クラスモジュール | `ThisWorkbook.cls`, `Sheet1.cls` |
-| `.bas` | 標準モジュール | `Module1.bas` |
+| Extension | Type | Example |
+|-----------|------|---------|
+| `.cls` | class or Excel object module | `ThisWorkbook.cls`, `Sheet1.cls` |
+| `.bas` | standard module | `Module1.bas` |
 | `.frm` | UserForm | `UserForm1.frm` |

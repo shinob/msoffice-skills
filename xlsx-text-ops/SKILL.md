@@ -6,16 +6,18 @@ license: Original work, no third-party license constraints
 
 # XLSX Text Operations Skill
 
+[日本語](SKILL.ja.md)
+
 Text-only editing of existing `.xlsx` and `.xlsm` files. Preserves formulas, formatting, charts, images, and relationships.
 
 ## Quick Reference
 
 | Task | Approach |
 |------|----------|
-| Extract all cell text | `python3 skills/xlsx-text-ops/scripts/extract.py workbook.xlsx` |
+| Extract all cell text | `python3 xlsx-text-ops/scripts/extract.py workbook.xlsx` |
 | Inspect raw XML | Unpack → read `xl/sharedStrings.xml` |
 | Edit text | Unpack → edit `xl/sharedStrings.xml` → pack |
-| Validate after edit | `python3 skills/xlsx-text-ops/scripts/extract.py edited.xlsx` |
+| Validate after edit | `python3 xlsx-text-ops/scripts/extract.py edited.xlsx` |
 | Visual spot-check | Open in Excel or LibreOffice |
 
 ---
@@ -42,12 +44,12 @@ Text-only editing of existing `.xlsx` and `.xlsm` files. Preserves formulas, for
 
 2. **Extract and read** all text before changing anything:
    ```bash
-   python3 skills/xlsx-text-ops/scripts/extract.py working_copy.xlsx
+   python3 xlsx-text-ops/scripts/extract.py working_copy.xlsx
    ```
 
 3. **Unpack** for XML-level inspection or editing:
    ```bash
-   python3 skills/xlsx-text-ops/scripts/unpack.py working_copy.xlsx unpacked/
+   python3 xlsx-text-ops/scripts/unpack.py working_copy.xlsx unpacked/
    ```
 
 4. **Identify edit surfaces** — determine which surfaces contain the target text:
@@ -69,12 +71,12 @@ Text-only editing of existing `.xlsx` and `.xlsm` files. Preserves formulas, for
 
 7. **Pack**:
    ```bash
-   python3 skills/xlsx-text-ops/scripts/pack.py unpacked/ edited.xlsx
+   python3 xlsx-text-ops/scripts/pack.py unpacked/ edited.xlsx
    ```
 
 8. **Validate** — re-extract and compare:
    ```bash
-   python3 skills/xlsx-text-ops/scripts/extract.py edited.xlsx
+   python3 xlsx-text-ops/scripts/extract.py edited.xlsx
    ```
    Check: old text gone, new text present, no duplicates, no leftover placeholders.
 
@@ -99,7 +101,7 @@ Read [xlsx-text-structure.md](references/xlsx-text-structure.md) for details on 
 After editing, always run:
 
 ```bash
-python3 skills/xlsx-text-ops/scripts/extract.py edited.xlsx | grep -iE "xxxx|lorem|ipsum|tbd|placeholder"
+python3 xlsx-text-ops/scripts/extract.py edited.xlsx | grep -iE "xxxx|lorem|ipsum|tbd|placeholder"
 ```
 
 If grep returns results, fix them before declaring success.
@@ -121,5 +123,5 @@ If grep returns results, fix them before declaring success.
 ## Dependencies
 
 - `pip install openpyxl` — text extraction and validation (`extract.py`)
-- `skills/xlsx-text-ops/scripts/unpack.py` — unpack XLSX to XML
-- `skills/xlsx-text-ops/scripts/pack.py` — repack with OPC-correct ordering
+- `xlsx-text-ops/scripts/unpack.py` — unpack XLSX to XML
+- `xlsx-text-ops/scripts/pack.py` — repack with OPC-correct ordering

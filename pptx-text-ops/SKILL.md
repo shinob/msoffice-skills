@@ -6,16 +6,18 @@ license: Original work, no third-party license constraints
 
 # PPTX Text Operations Skill
 
+[日本語](SKILL.ja.md)
+
 Text-only editing of existing `.pptx` files. Preserves layout, images, masters, themes, and relationships.
 
 ## Quick Reference
 
 | Task | Approach |
 |------|----------|
-| Extract all slide text | `python3 skills/pptx-text-ops/scripts/extract.py presentation.pptx` |
+| Extract all slide text | `python3 pptx-text-ops/scripts/extract.py presentation.pptx` |
 | Inspect raw XML runs | Unpack → read `ppt/slides/slideN.xml` |
 | Edit text | Unpack → edit XML → pack |
-| Validate after edit | `python3 skills/pptx-text-ops/scripts/extract.py edited.pptx` |
+| Validate after edit | `python3 pptx-text-ops/scripts/extract.py edited.pptx` |
 | Visual spot-check | Convert to PDF → render to images |
 
 ---
@@ -41,12 +43,12 @@ Text-only editing of existing `.pptx` files. Preserves layout, images, masters, 
 
 2. **Extract and read** all text before changing anything:
    ```bash
-   python3 skills/pptx-text-ops/scripts/extract.py working_copy.pptx
+   python3 pptx-text-ops/scripts/extract.py working_copy.pptx
    ```
 
 3. **Unpack** for XML-level inspection or editing:
    ```bash
-   python skills/pptx-text-ops/scripts/unpack.py working_copy.pptx unpacked/
+   python3 pptx-text-ops/scripts/unpack.py working_copy.pptx unpacked/
    ```
 
 4. **Identify edit surfaces** — determine which surfaces contain the target text:
@@ -62,12 +64,12 @@ Text-only editing of existing `.pptx` files. Preserves layout, images, masters, 
 
 7. **Pack**:
    ```bash
-   python skills/pptx-text-ops/scripts/pack.py unpacked/ edited.pptx
+   python3 pptx-text-ops/scripts/pack.py unpacked/ edited.pptx
    ```
 
 8. **Validate** — re-extract and compare:
    ```bash
-   python3 skills/pptx-text-ops/scripts/extract.py edited.pptx
+   python3 pptx-text-ops/scripts/extract.py edited.pptx
    ```
    Check: old text gone, new text present, no duplicates, no leftover placeholders.
 
@@ -95,7 +97,7 @@ Read [pptx-text-structure.md](references/pptx-text-structure.md) for details on 
 After editing, always run:
 
 ```bash
-python3 skills/pptx-text-ops/scripts/extract.py edited.pptx | grep -iE "xxxx|lorem|ipsum|tbd|placeholder|this.*(slide|page).*layout"
+python3 pptx-text-ops/scripts/extract.py edited.pptx | grep -iE "xxxx|lorem|ipsum|tbd|placeholder|this.*(slide|page).*layout"
 ```
 
 If grep returns results, fix them before declaring success.
@@ -117,5 +119,5 @@ If grep returns results, fix them before declaring success.
 ## Dependencies
 
 - `pip install python-pptx` — text extraction (`extract.py`)
-- `skills/pptx-text-ops/scripts/unpack.py` — unpack PPTX to XML
-- `skills/pptx-text-ops/scripts/pack.py` — repack with validation
+- `pptx-text-ops/scripts/unpack.py` — unpack PPTX to XML
+- `pptx-text-ops/scripts/pack.py` — repack with validation

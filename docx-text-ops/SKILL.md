@@ -6,16 +6,18 @@ license: Original work, no third-party license constraints
 
 # DOCX Text Operations Skill
 
+[日本語](SKILL.ja.md)
+
 Text-only editing of existing `.docx` files. Preserves styles, images, tables, numbering, and relationships.
 
 ## Quick Reference
 
 | Task | Approach |
 |------|----------|
-| Extract all document text | `python3 skills/docx-text-ops/scripts/extract.py document.docx` |
+| Extract all document text | `python3 docx-text-ops/scripts/extract.py document.docx` |
 | Inspect raw XML runs | Unpack → read `word/document.xml` |
 | Edit text | Unpack → edit XML → pack |
-| Validate after edit | `python3 skills/docx-text-ops/scripts/extract.py edited.docx` |
+| Validate after edit | `python3 docx-text-ops/scripts/extract.py edited.docx` |
 | Visual spot-check | Open in Word or LibreOffice |
 
 ---
@@ -23,7 +25,7 @@ Text-only editing of existing `.docx` files. Preserves styles, images, tables, n
 ## Non-Goals
 
 - Creating new documents from scratch → use python-docx scripting
-- Redesigning styles, themes, or page layouts
+- Redesigning styles, themes, or page layouts → use docx-design-ops
 - Documents with active tracked changes → accept/reject all changes in Word first
 - Editing embedded object content (Excel tables, OLE objects)
 - Live Word automation → use a COM/MCP server
@@ -41,13 +43,13 @@ Text-only editing of existing `.docx` files. Preserves styles, images, tables, n
 
 2. **Extract and read** all text before changing anything:
    ```bash
-   python3 skills/docx-text-ops/scripts/extract.py working_copy.docx
+   python3 docx-text-ops/scripts/extract.py working_copy.docx
    ```
    If the output contains a `WARNING: document contains tracked changes` line, stop and ask the user to accept or reject all changes in Word before proceeding.
 
 3. **Unpack** for XML-level inspection or editing:
    ```bash
-   python3 skills/docx-text-ops/scripts/unpack.py working_copy.docx unpacked/
+   python3 docx-text-ops/scripts/unpack.py working_copy.docx unpacked/
    ```
 
 4. **Identify edit surfaces** — determine which surfaces contain the target text:
@@ -64,12 +66,12 @@ Text-only editing of existing `.docx` files. Preserves styles, images, tables, n
 
 7. **Pack**:
    ```bash
-   python3 skills/docx-text-ops/scripts/pack.py unpacked/ edited.docx
+   python3 docx-text-ops/scripts/pack.py unpacked/ edited.docx
    ```
 
 8. **Validate** — re-extract and compare:
    ```bash
-   python3 skills/docx-text-ops/scripts/extract.py edited.docx
+   python3 docx-text-ops/scripts/extract.py edited.docx
    ```
    Check: old text gone, new text present, no duplicates, no leftover placeholders.
 
@@ -95,7 +97,7 @@ Read [docx-text-structure.md](references/docx-text-structure.md) for details on 
 After editing, always run:
 
 ```bash
-python3 skills/docx-text-ops/scripts/extract.py edited.docx | grep -iE "xxxx|lorem|ipsum|tbd|placeholder"
+python3 docx-text-ops/scripts/extract.py edited.docx | grep -iE "xxxx|lorem|ipsum|tbd|placeholder"
 ```
 
 If grep returns results, fix them before declaring success.
@@ -117,5 +119,5 @@ If grep returns results, fix them before declaring success.
 ## Dependencies
 
 - `pip install python-docx` — text extraction (`extract.py`)
-- `skills/docx-text-ops/scripts/unpack.py` — unpack DOCX to XML
-- `skills/docx-text-ops/scripts/pack.py` — repack with OPC-correct ordering
+- `docx-text-ops/scripts/unpack.py` — unpack DOCX to XML
+- `docx-text-ops/scripts/pack.py` — repack with OPC-correct ordering
