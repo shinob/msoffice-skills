@@ -120,6 +120,24 @@ def _extract_ppr(ppr):
     return out
 
 
+def _extract_tblpr(tblpr):
+    if tblpr is None:
+        return {}
+    out = {}
+    mar = tblpr.find(W("tblCellMar"))
+    if mar is not None:
+        margins = {}
+        for side in ("top", "left", "bottom", "right"):
+            s_elem = mar.find(W(side))
+            if s_elem is not None:
+                w_val = s_elem.get(W("w"))
+                if w_val:
+                    margins[side] = int(w_val)
+        if margins:
+            out["tblCellMar"] = margins
+    return out
+
+
 def parse_styles(xml_bytes):
     root = ET.fromstring(xml_bytes)
     styles = []
@@ -149,6 +167,7 @@ def parse_styles(xml_bytes):
             "basedOn": based_e.get(W("val")) if based_e is not None else None,
             "rPr": _extract_rpr(elem.find(W("rPr"))),
             "pPr": _extract_ppr(elem.find(W("pPr"))),
+            "tblPr": _extract_tblpr(elem.find(W("tblPr"))),
         })
 
     return styles
@@ -191,6 +210,17 @@ def count_inline_overrides(xml_bytes):
     return para_count, run_count, examples
 
 
+def count_table_margin_overrides(xml_bytes):
+    """Count <w:tbl> elements in document.xml that have direct tblCellMar overrides."""
+    root = ET.fromstring(xml_bytes)
+    count = 0
+    for tbl in root.iter(W("tbl")):
+        tblpr = tbl.find(W("tblPr"))
+        if tblpr is not None and tblpr.find(W("tblCellMar")) is not None:
+            count += 1
+    return count
+
+
 # ---------------------------------------------------------------------------
 # Main inspector
 # ---------------------------------------------------------------------------
@@ -224,10 +254,12 @@ def inspect(docx_path, unpacked_dir=None):
     doc_bytes = read("word/document.xml")
     if doc_bytes:
         p_count, r_count, examples = count_inline_overrides(doc_bytes)
+        tbl_mar_count = count_table_margin_overrides(doc_bytes)
         result["inlineOverrides"] = {
             "paragraphsWithDirectPpr": p_count,
             "runsWithDirectRpr": r_count,
             "examples": examples,
+            "tablesWithDirectCellMar": tbl_mar_count,
         }
 
     if not unpacked_dir:
@@ -304,11 +336,37 @@ def print_human(data):
     print()
 
     print(SEP)
+    print("TABLE STYLES  (cell margins)")
+    print(SEP)
+    table_styles = [s for s in data.get("styles", []) if s.get("type") == "table"]
+    if not table_styles:
+        print("  (no table styles found)")
+
+    def _fmt(twips):
+        mm = twips * 25.4 / 1440
+        return f"{twips} twips ({mm:.1f} mm)"
+
+    for s in table_styles:
+        mar = s.get("tblPr", {}).get("tblCellMar")
+        print(f"\n  [{s['styleId']}]  \"{s['name']}\"")
+        if s.get("basedOn"):
+            print(f"    basedOn: {s['basedOn']}")
+        if not mar:
+            print("    (using Word default: 108 twips / 1.9 mm on all sides)")
+        else:
+            for side in ("top", "left", "bottom", "right"):
+                if side in mar:
+                    print(f"    {side:<8} {_fmt(mar[side])}")
+    print()
+
+    print(SEP)
     print("INLINE OVERRIDES  (in word/document.xml)")
     print(SEP)
     ov = data.get("inlineOverrides", {})
     print(f"  Paragraphs with direct pPr overrides: {ov.get('paragraphsWithDirectPpr', 0)}")
     print(f"  Runs with direct rPr overrides:       {ov.get('runsWithDirectRpr', 0)}")
+    tbl_mar = ov.get("tablesWithDirectCellMar", 0)
+    print(f"  Tables with direct tblCellMar:        {tbl_mar}")
     ex = ov.get("examples", [])
     if ex:
         print("  Examples:")
@@ -319,6 +377,11 @@ def print_human(data):
         print("  NOTE: Inline overrides take precedence over style definitions.")
         print("  Style-level changes may not affect these runs/paragraphs.")
         print("  See design-recipes.md Recipe 5 to audit and remove them.")
+    if tbl_mar > 0:
+        print()
+        print(f"  NOTE: {tbl_mar} table(s) have direct tblCellMar in document.xml.")
+        print("  These override style-level cell margins set by apply_design.py.")
+        print("  To fix, remove w:tblCellMar from w:tblPr in word/document.xml.")
     print()
 
 

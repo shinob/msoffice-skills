@@ -26,6 +26,9 @@ spec.json format:
     },
     "Heading1": {
       "rPr": { "rFonts": "Calibri Light", "sz": 32, "color": "2E74B5", "bold": true }
+    },
+    "TableGrid": {
+      "tblPr": { "cellMarTop": 108, "cellMarLeft": 200, "cellMarBottom": 108, "cellMarRight": 200 }
     }
   }
 }
@@ -42,6 +45,12 @@ pPr keys:
   spacingAfter    space after paragraph in twips (160 = 8pt)
   line            line height in twips (276 = 1.15× at 12pt)
   lineRule        "auto" | "exact" | "atLeast"
+
+tblPr keys (table styles only):
+  cellMarTop      cell top padding in twips (108 ≈ 1.9 mm, Word default)
+  cellMarLeft     cell left padding in twips
+  cellMarBottom   cell bottom padding in twips
+  cellMarRight    cell right padding in twips
 """
 
 import argparse
@@ -252,6 +261,30 @@ def _apply_ppr(style_elem, ppr_spec, style_id, changes):
                 spacing.set(xml_attr, new_val)
 
 
+def _apply_tblpr(style_elem, tblpr_spec, style_id, changes):
+    tblpr = _get_or_create(style_elem, W("tblPr"))
+    margin_keys = ("cellMarTop", "cellMarLeft", "cellMarBottom", "cellMarRight")
+    if any(k in tblpr_spec for k in margin_keys):
+        mar = _get_or_create(tblpr, W("tblCellMar"))
+        mapping = {
+            "cellMarTop":    (W("top"),    "top"),
+            "cellMarLeft":   (W("left"),   "left"),
+            "cellMarBottom": (W("bottom"), "bottom"),
+            "cellMarRight":  (W("right"),  "right"),
+        }
+        for spec_key, (xml_tag, side) in mapping.items():
+            if spec_key in tblpr_spec:
+                new_val = str(tblpr_spec[spec_key])
+                side_elem = _get_or_create(mar, xml_tag)
+                old_val = side_elem.get(W("w"), "")
+                if old_val != new_val:
+                    changes.append(
+                        f"  style[{style_id}].tblPr.tblCellMar.{side}: {old_val!r} -> {new_val!r}"
+                    )
+                side_elem.set(W("w"), new_val)
+                side_elem.set(W("type"), "dxa")
+
+
 def apply_styles(root, styles_spec, changes):
     for style_id, props in styles_spec.items():
         # Find style by styleId attribute
@@ -269,6 +302,15 @@ def apply_styles(root, styles_spec, changes):
             _apply_rpr(style_elem, props["rPr"], style_id, changes)
         if "pPr" in props:
             _apply_ppr(style_elem, props["pPr"], style_id, changes)
+        if "tblPr" in props:
+            style_type = style_elem.get(W("type"), "")
+            if style_type != "table":
+                changes.append(
+                    f"  WARNING: style[{style_id}] has type={style_type!r}, not 'table'"
+                    " — tblPr skipped (tblPr only applies to table styles)"
+                )
+            else:
+                _apply_tblpr(style_elem, props["tblPr"], style_id, changes)
 
 
 # ---------------------------------------------------------------------------

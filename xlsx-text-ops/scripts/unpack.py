@@ -58,18 +58,43 @@ def unpack(input_file: str, output_dir: str) -> str:
 def _pretty_print(path: Path) -> None:
     try:
         raw = path.read_bytes()
-        # Preserve original XML declaration; toprettyxml drops standalone="yes"
+        # Preserve original XML declaration; minidom drops standalone="yes"
         # and lowercases encoding, both of which are unnecessary changes.
         m = re.match(rb"<\?xml[^?]*\?>", raw)
         orig_decl = m.group().decode("utf-8") if m else None
 
         dom = xml.dom.minidom.parseString(raw)
-        pretty = dom.toprettyxml(indent="  ", encoding="utf-8").decode("utf-8")
-        if orig_decl:
-            pretty = re.sub(r"<\?xml[^?]*\?>", orig_decl, pretty, count=1)
+        _indent(dom.documentElement, 0)
+        pretty = dom.toxml(encoding="utf-8").decode("utf-8")
+        pretty = re.sub(
+            r"<\?xml[^?]*\?>",
+            lambda d: (orig_decl or d.group()) + "\n",
+            pretty,
+            count=1,
+        )
         path.write_text(pretty, encoding="utf-8")
     except Exception:
         pass
+
+
+def _indent(node, level: int) -> None:
+    """Indent elements that contain only child elements.
+
+    toprettyxml() also inserts newlines and spaces inside text-bearing
+    elements such as <t> and <v>, which changes the document text. Elements that
+    have any text node (including whitespace-only text) are left untouched.
+    """
+    children = list(node.childNodes)
+    if not children:
+        return
+    if any(c.nodeType in (c.TEXT_NODE, c.CDATA_SECTION_NODE) for c in children):
+        return
+    doc = node.ownerDocument
+    for c in children:
+        node.insertBefore(doc.createTextNode("\n" + "  " * (level + 1)), c)
+        if c.nodeType == c.ELEMENT_NODE:
+            _indent(c, level + 1)
+    node.appendChild(doc.createTextNode("\n" + "  " * level))
 
 
 def _escape_smart_quotes(path: Path) -> None:

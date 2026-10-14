@@ -106,6 +106,49 @@ Inline formatting takes precedence over styles. Use `inspect_design.py` to count
 
 Remove inline overrides only when the user explicitly wants style-level normalization. Do not remove structural properties such as paragraph style, numbering, or section properties.
 
+## Recipe 6: Adjust Table Cell Padding
+
+Target: `word/styles.xml` (table style)
+
+1. Inspect current cell margins:
+   ```bash
+   python3 docx-design-ops/scripts/inspect_design.py working_copy.docx
+   ```
+   Look at the **TABLE STYLES** section for the style you want to change.
+   If no margins are shown, the style inherits Word's built-in default (108 twips ≈ 1.9 mm on all sides).
+
+2. Find the table style ID to target. Common IDs: `TableGrid`, `TableNormal`.
+   To confirm, search `word/styles.xml` in the unpacked directory:
+   ```bash
+   grep 'w:type="table"' unpacked/word/styles.xml
+   ```
+
+3. Build a spec and apply:
+   ```json
+   {
+     "styles": {
+       "TableGrid": {
+         "tblPr": { "cellMarTop": 108, "cellMarLeft": 200, "cellMarBottom": 108, "cellMarRight": 200 }
+       }
+     }
+   }
+   ```
+   ```bash
+   python3 docx-design-ops/scripts/apply_design.py unpacked/ spec.json --dry-run
+   python3 docx-design-ops/scripts/apply_design.py unpacked/ spec.json
+   ```
+
+All values are in twips (twentieths of a point). Reference values:
+
+| Twips | mm | Note |
+|-------|----|------|
+| 108 | 1.9 | Word default |
+| 160 | 2.8 | slightly wider |
+| 200 | 3.5 | comfortable |
+| 360 | 6.4 | 0.25 inch |
+
+To override a single cell's padding rather than the whole table style, edit `w:tcMar` inside the `<w:tc>` element in `word/document.xml` directly — `apply_design.py` does not support per-cell overrides.
+
 ## Validation Checklist
 
 - `inspect_design.py` shows the intended theme or style changes.

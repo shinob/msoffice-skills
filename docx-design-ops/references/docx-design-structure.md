@@ -54,6 +54,57 @@ Theme-referenced styles update automatically when theme slots change. Direct col
 | `w:spacing w:line` with `auto` | twentieths of a point | `276` = 1.15 line spacing |
 | `w:ind w:left`, `w:right` | twentieths of a point | `720` = 0.5 inch |
 
+## Table Cell Margins
+
+Table cell padding is controlled by `w:tblCellMar` inside `w:tblPr`.
+
+**Style-level default** (applies to all cells in tables using that style — edit `word/styles.xml`):
+
+```xml
+<w:style w:type="table" w:styleId="TableGrid">
+  <w:tblPr>
+    <w:tblCellMar>
+      <w:top    w:w="108" w:type="dxa"/>
+      <w:left   w:w="108" w:type="dxa"/>
+      <w:bottom w:w="108" w:type="dxa"/>
+      <w:right  w:w="108" w:type="dxa"/>
+    </w:tblCellMar>
+  </w:tblPr>
+</w:style>
+```
+
+**Table-instance override** (applies to one specific table — edit `word/document.xml`):
+
+```xml
+<w:tbl>
+  <w:tblPr>
+    <w:tblCellMar>
+      <w:top    w:w="200" w:type="dxa"/>
+      <w:left   w:w="200" w:type="dxa"/>
+      <w:bottom w:w="200" w:type="dxa"/>
+      <w:right  w:w="200" w:type="dxa"/>
+    </w:tblCellMar>
+  </w:tblPr>
+</w:tbl>
+```
+
+**Cell-level override** (`w:tcMar` inside `<w:tc>` — edit `word/document.xml`):
+
+```xml
+<w:tc>
+  <w:tcPr>
+    <w:tcMar>
+      <w:left  w:w="360" w:type="dxa"/>
+      <w:right w:w="360" w:type="dxa"/>
+    </w:tcMar>
+  </w:tcPr>
+</w:tc>
+```
+
+`apply_design.py` supports the style-level default only. Table-instance and cell-level edits require direct XML editing.
+
+`w:type="dxa"` means twips (twentieths of a point). Word's built-in default is 108 twips (≈ 1.9 mm) on all sides.
+
 ## Namespaces
 
 | Prefix | Namespace |

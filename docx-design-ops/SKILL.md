@@ -37,7 +37,8 @@ Visual design editing for existing `.docx` files. Changes fonts, colors, heading
 - Editing text content → use docx-text-ops
 - Creating new documents from scratch → use python-docx scripting
 - Documents with active tracked changes → accept/reject all changes in Word first
-- Table cell shading, borders, and cell-level design → requires direct XML editing in `document.xml`
+- Table cell shading and borders → requires direct XML editing in `document.xml`
+- Per-cell padding overrides (`w:tcMar`) → requires direct XML editing in `document.xml`; style-level cell margins are supported via `apply_design.py`
 - Image and drawing manipulation
 - Animations and transitions
 

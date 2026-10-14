@@ -37,6 +37,48 @@
 
 インライン書式はスタイルより優先されます。スタイルで統一したい場合だけ、明示的に direct formatting を除去します。段落スタイル、番号付け、セクションプロパティなど構造要素は削除しません。
 
+## レシピ 6: 表のセル余白を調整する
+
+対象: `word/styles.xml`（テーブルスタイル）
+
+1. 現在のセル余白を確認する。
+   ```bash
+   python3 docx-design-ops/scripts/inspect_design.py working_copy.docx
+   ```
+   **TABLE STYLES** セクションで対象スタイルの値を確認します。
+   表示がない場合は Word のデフォルト（全辺 108 twips ≈ 1.9 mm）を継承しています。
+
+2. 対象のテーブルスタイル ID を確認する。代表例: `TableGrid`、`TableNormal`。
+   ```bash
+   grep 'w:type="table"' unpacked/word/styles.xml
+   ```
+
+3. spec を作成して適用する。
+   ```json
+   {
+     "styles": {
+       "TableGrid": {
+         "tblPr": { "cellMarTop": 108, "cellMarLeft": 200, "cellMarBottom": 108, "cellMarRight": 200 }
+       }
+     }
+   }
+   ```
+   ```bash
+   python3 docx-design-ops/scripts/apply_design.py unpacked/ spec.json --dry-run
+   python3 docx-design-ops/scripts/apply_design.py unpacked/ spec.json
+   ```
+
+値は twips（ポイントの 1/20）で指定します。参考値：
+
+| twips | mm | 備考 |
+|-------|----|------|
+| 108 | 1.9 | Word デフォルト |
+| 160 | 2.8 | やや広め |
+| 200 | 3.5 | 読みやすい |
+| 360 | 6.4 | 0.25 inch |
+
+特定のセルだけ余白を変えたい場合は `word/document.xml` 内の `<w:tc>` に `w:tcMar` を直接編集してください（`apply_design.py` ではセル個別の上書きには対応していません）。
+
 ## 検証
 
 - `inspect_design.py` で意図した変更が見える。
